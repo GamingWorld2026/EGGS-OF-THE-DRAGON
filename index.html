@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eggs of the Dragon - Epic Collection</title>
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #ecf0f1;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a2e;
+            border: 8px solid #2d3748;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 1), 0 0 15px rgba(142, 68, 173, 0.5);
+            border-radius: 12px;
+            padding: 40px;
+            z-index: 20;
+            position: absolute;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            color: #f1c40f;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        .menu-subtitle {
+            font-size: 18px;
+            color: #bdc3c7;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        button.level-btn {
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(180deg, #34495e, #2c3e50);
+            color: #f1c40f;
+            border: 2px solid #7f8c8d;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: 0.2s;
+        }
+
+        button.level-btn:hover {
+            background: linear-gradient(180deg, #415b76, #34495e);
+            transform: scale(1.05);
+            border-color: #f1c40f;
+            color: #fff;
+        }
+
+        #game-frame-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .back-bar {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #0b0c10;
+            display: flex;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            border-bottom: 2px solid #2d3748;
+        }
+
+        button.back-btn {
+            padding: 8px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #e74c3c;
+            color: white;
+            border: 2px solid #c0392b;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        button.back-btn:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+
+        iframe {
+            width: 100%;
+            height: calc(100vh - 50px);
+            border: none;
+            background-color: #0b0c10;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ANA MENÜ -->
+    <div id="main-menu">
+        <div class="menu-title">Eggs of the Dragon</div>
+        <div class="menu-subtitle">Select your level to begin the adventure</div>
+        
+        <div class="level-grid" id="level-grid">
+            <!-- Butonlar JavaScript ile yüklenecek -->
+        </div>
+    </div>
+
+    <!-- OYUN ÇERÇEVESİ (IFRAME) -->
+    <div id="game-frame-container">
+        <div class="back-bar">
+            <button class="back-btn" onclick="backToMenu()">🔙 Back to Menu</button>
+        </div>
+        <iframe id="game-frame" src=""></iframe>
+    </div>
+
+    <script>
+        // Dosya isimlerinizi buraya birebir yazmalısınız. 
+        // Not: İlk iki dosyanızda "LEVEL1 .html" şeklinde boşluk bulunduğundan diziyi ona göre yapılandırdım.
+        const levels = [
+            "LEVEL1.html",
+            "LEVEL2.html",
+            "LEVEL3.html",
+            "LEVEL4.html",
+            "LEVEL5.html",
+            "LEVEL6.html",
+            "LEVEL7.html",
+            "LEVEL8.html",
+            "LEVEL9.html",
+            "LEVEL10.html"
+        ];
+
+        const grid = document.getElementById('level-grid');
+        const mainMenu = document.getElementById('main-menu');
+        const frameContainer = document.getElementById('game-frame-container');
+        const gameFrame = document.getElementById('game-frame');
+
+        // Level butonlarını dinamik oluştur
+        levels.forEach((file, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'level-btn';
+            btn.innerText = `Level ${index + 1}`;
+            btn.onclick = () => loadLevel(file);
+            grid.appendChild(btn);
+        });
+
+        function loadLevel(fileName) {
+            // İlgili dosyayı iframe içine yükle ve menüyü gizle
+            gameFrame.src = fileName;
+            mainMenu.style.display = 'none';
+            frameContainer.style.display = 'flex';
+            
+            // Seçilen oyuna tıklandıktan sonra klavye odağını iframe'e ver
+            setTimeout(() => {
+                gameFrame.focus();
+            }, 100);
+        }
+
+        function backToMenu() {
+            // Iframe içeriğini temizle ve ana menüye dön
+            gameFrame.src = "";
+            frameContainer.style.display = 'none';
+            mainMenu.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

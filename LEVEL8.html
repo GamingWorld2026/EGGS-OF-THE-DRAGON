@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eggs of the Dragon: Level 8 - Acid Pools</title>
+    <style>
+        body {
+            background-color: #1a1a2e; 
+            color: #ecf0f1;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #game-wrapper {
+            position: relative;
+        }
+
+        #game-container {
+            border: 8px solid #2d3748;
+            background-color: #2c3e50;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 15px rgba(231, 76, 60, 0.6);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui {
+            position: absolute;
+            top: -55px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px black;
+        }
+
+        .stat-box {
+            padding: 8px 18px;
+            background: linear-gradient(180deg, #34495e, #2c3e50);
+            border: 2px solid #7f8c8d;
+            border-radius: 6px;
+            color: #f1c40f;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+
+        #dungeon-box {
+            color: #bdc3c7;
+        }
+
+        #mute-btn {
+            padding: 8px 14px;
+            background: linear-gradient(180deg, #34495e, #2c3e50);
+            border: 2px solid #7f8c8d;
+            border-radius: 6px;
+            color: #ecf0f1;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+        }
+
+        #mute-btn:hover {
+            background: linear-gradient(180deg, #415b76, #34495e);
+            transform: scale(1.05);
+        }
+
+        #overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .menu-text {
+            font-size: 42px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .sub-text {
+            font-size: 18px;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        button.main-btn {
+            margin-top: 30px;
+            padding: 12px 25px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #27ae60;
+            color: white;
+            border: 2px solid #2ecc71;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+
+        button.main-btn:hover {
+            background-color: #2ecc71;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <radialGradient id="goldGrad" cx="30%" cy="30%" r="65%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="20%" stop-color="#fff59d"/>
+                <stop offset="50%" stop-color="#f1c40f"/>
+                <stop offset="75%" stop-color="#d35400"/>
+                <stop offset="100%" stop-color="#111111"/>
+            </radialGradient>
+        </defs>
+        <symbol id="golden-egg-svg" viewBox="0 0 100 120">
+            <ellipse cx="50" cy="60" rx="35" ry="50" fill="url(#goldGrad)" />
+            <path d="M42,42 Q50,49 58,42" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M28,62 Q36,69 44,62" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M56,62 Q64,69 72,62" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M42,82 Q50,89 58,82" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="3" stroke-linecap="round"/>
+        </symbol>
+    </svg>
+
+    <div id="game-wrapper">
+        <div id="ui">
+            <!-- Sol Grup: Birbirine yapışık Eggs ve Level kutuları (Zamanlama kaldırıldı) -->
+            <div style="display: flex; align-items: center; gap: 0;">
+                <div class="stat-box" style="border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none;">Eggs: <span id="egg-count">0/11</span></div>
+                <div class="stat-box" id="dungeon-box" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">Level 8</div>
+            </div>
+            
+            <!-- Orta Grup: Altın Yumurtalar -->
+            <div id="golden-eggs" style="display: flex; gap: 4px; align-items: center;"></div>
+
+            <!-- Sağ Grup: Ses Butonu -->
+            <button id="mute-btn" onclick="toggleMute()" title="Ses Aç/Kapat">🔊</button>
+        </div>
+        
+        <div id="game-container">
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
+        </div>
+
+        <div id="overlay-screen">
+            <div class="menu-text" id="title-text">LEVEL 8 : ACID POOLS</div>
+            <div class="sub-text" id="desc-text1">Watch your step! Avoid the water pools!</div>
+            <div class="sub-text" id="desc-text2">Collect the 11 dragon eggs</div>
+            <div class="sub-text" id="desc-text3">Movement: Arrow Keys or W, A, S, D</div>
+            
+            <div id="win-egg-icon" style="width: 100px; height: 120px; display: none; margin-top: 15px; filter: drop-shadow(0 0 25px gold);">
+                <svg width="100%" height="100%"><use href="#golden-egg-svg"></use></svg>
+            </div>
+            
+            <button class="main-btn" id="start-btn" onclick="startGame()">Start Level 8</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME STATE ---
+        let currentLevel = 8;
+
+        // --- MOVEMENT STATE ---
+        let sliding = false;
+        let slideDir = {x: 0, y: 0};
+        let slideSpeed = 8; 
+        let slideFrameCounter = 0;
+        let slideDistanceRemaining = 0;
+        let maxSlideDistance = 1;
+
+        // --- GHOST CLOAK STATE ---
+        let ghosts = [
+            { active: false, px: 0, py: 0 },
+            { active: false, px: 0, py: 0 }
+        ];
+        let ghostInterval;
+
+        // --- SOUND ENGINE (Web Audio API) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let isMuted = false;
+
+        function toggleMute() {
+            isMuted = !isMuted;
+    const muteBtn = document.getElementById('mute-btn');
+    
+    if (isMuted) {
+        muteBtn.innerText = "🔇";
+        muteBtn.style.color = "#e74c3c";
+        // Aktif olarak çalan tüm Web Audio ses akışını anında dondurur
+        if (audioCtx && audioCtx.state === 'running') {
+            audioCtx.suspend();
+        }
+    } else {
+        muteBtn.innerText = "🔊";
+        muteBtn.style.color = "#ecf0f1";
+        // Sesi tekrar aktif hale getirir
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+        }
+        
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (isMuted) return;
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        let bgmNodes = null;
+
+        const sfx = {
+            start: () => {
+                playTone(349.23, 'square', 0.1, 0.1); 
+                setTimeout(() => playTone(440.00, 'square', 0.1, 0.1), 100); 
+                setTimeout(() => playTone(523.25, 'square', 0.1, 0.1), 200); 
+                setTimeout(() => playTone(698.46, 'square', 0.3, 0.15), 300); 
+            },
+            collect: () => {
+                playTone(880.00, 'triangle', 0.1, 0.2); 
+                setTimeout(() => playTone(1174.66, 'sine', 0.2, 0.15), 80); 
+            },
+            caught: () => {
+                const dropNotes = [220, 185, 146.83, 110, 82.41, 65.41];
+                dropNotes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        playTone(freq, 'sawtooth', index === dropNotes.length - 1 ? 0.7 : 0.15, 0.25);
+                    }, index * 90);
+                });
+            },
+            win: () => {
+                const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
+                notes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        playTone(freq, 'square', index === notes.length - 1 ? 0.5 : 0.12, 0.18);
+                    }, index * 120);
+                });
+            },
+            startBGM: () => { 
+                if (audioCtx) audioCtx.close();
+                audioCtx = new AudioContext();
+                
+                // 1. Derin, fokurdayan kimyasal sıvı uğultusu (Base drone)
+                const baseOsc = audioCtx.createOscillator();
+                baseOsc.type = 'triangle';
+                baseOsc.frequency.value = 45; // Kalın, boğuk bir ton
+
+                // Sıvı hareketini (dalgalanmayı) simüle etmek için LFO (Low-Frequency Oscillator)
+                const lfo = audioCtx.createOscillator();
+                lfo.type = 'sine';
+                lfo.frequency.value = 2; // Saniyede 2 dalgalanma
+
+                const lfoGain = audioCtx.createGain();
+                lfoGain.gain.value = 15; // Frekans dalgalanma şiddeti
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(baseOsc.frequency);
+                lfo.start();
+
+                const baseGain = audioCtx.createGain();
+                baseGain.gain.value = 0.25;
+
+                baseOsc.connect(baseGain);
+                baseGain.connect(audioCtx.destination);
+                baseOsc.start();
+
+                bgmNodes = { baseOsc, lfo, bubbleTimer: null };
+
+                // 2. Rastgele patlayan asit baloncukları (Bubbles)
+                const createBubble = () => {
+                    if (!audioCtx || audioCtx.state === 'closed') return;
+
+                    const bOsc = audioCtx.createOscillator();
+                    const bGain = audioCtx.createGain();
+
+                    // Baloncuğun "bloop" sesi için frekansın hızlıca yukarı çıkması gerekir
+                    const startFreq = 300 + Math.random() * 400; // 300Hz - 700Hz arası
+                    const endFreq = startFreq + 150 + Math.random() * 200; // Tizleşerek patlama
+                    const duration = 0.04 + Math.random() * 0.08; // Çok kısa bir "plop" süresi
+
+                    bOsc.type = 'sine';
+                    bOsc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+                    bOsc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+
+                    // Sesi aniden başlatıp yumuşakça sönümle
+                    bGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    bGain.gain.linearRampToValueAtTime(0.15 + Math.random() * 0.1, audioCtx.currentTime + duration * 0.1);
+                    bGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                    bOsc.connect(bGain);
+                    bGain.connect(audioCtx.destination);
+
+                    bOsc.start();
+                    bOsc.stop(audioCtx.currentTime + duration);
+
+                    // Bir sonraki baloncuğun çıkış zamanını rastgele belirle
+                    const nextBubbleIn = 50 + Math.random() * 250; // 50ms ile 300ms arası
+                    bgmNodes.bubbleTimer = setTimeout(createBubble, nextBubbleIn);
+                };
+
+                createBubble(); // Fokurdamayı döngüye sok
+            },
+            stopBGM: () => {
+                if (bgmNodes) {
+                    if (bgmNodes.baseOsc) bgmNodes.baseOsc.stop();
+                    if (bgmNodes.lfo) bgmNodes.lfo.stop();
+                    if (bgmNodes.bubbleTimer) clearTimeout(bgmNodes.bubbleTimer);
+                }
+                if (audioCtx) audioCtx.close();
+                audioCtx = null;
+            }
+        };
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // --- LEVEL 8: ACID POOLS LAYOUT ---
+        // Toplam 8 Portal: 4 Dış Kenar Ortası (0,7), (14,7), (7,0), (7,14) ve 4 İç Portal (3,3), (11,3), (3,11), (11,11)
+        // W: Su göletleri (Karakter girerse yanar)
+        const mapLayout = [
+            "1111111P1111111",
+            "100000000000W01",
+            "101111101111101",
+            "101P0010100P101",
+            "101010000010101",
+            "101011101110101",
+            "1000W0000000001",
+            "P0011100011100P", 
+            "1000000000W0001",
+            "101011101110101",
+            "101010000010101",
+            "101P0010100P101",
+            "101111101111101",
+            "10W000000000001",
+            "1111111P1111111"
+        ];
+
+        const rows = mapLayout.length;
+        const cols = mapLayout[0].length;
+        const tileSize = canvas.width / cols;
+
+        let hobbit = { x: 7, y: 7 }; 
+        
+        // İki agresif ejderha
+        let dragons = [
+            { x: 1, y: 1, fire: { active: false, timer: 0, nextFireIn: 100 } },
+            { x: 13, y: 13, fire: { active: false, timer: 0, nextFireIn: 150 } }
+        ];
+        let eggs = [];
+        const totalEggs = 11; 
+        let eggsCollected = 0;
+        
+        let isPlaying = false;
+        let dragonInterval;
+        let dragonSpeed = 350; // Agresif/hızlı ejderhalar
+        let animationTime = 0; 
+
+        const colors = {
+            floor: '#2c3e50', 
+            dragon: '#c0392b',
+            wallBase: '#1a252f'
+        };
+
+        const eggColors = ['#f1c40f', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6', '#e67e22', '#1abc9c', '#e84393', '#00cec9', '#ffffff', '#ff9f43'];
+
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying || sliding) return; 
+            
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
+                e.preventDefault();
+            }
+            
+            let tempDir = {x: 0, y: 0};
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') tempDir = {x: 0, y: -1};
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') tempDir = {x: 0, y: 1};
+            else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') tempDir = {x: -1, y: 0};
+            else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') tempDir = {x: 1, y: 0};
+            else return;
+
+            let nx = hobbit.x + tempDir.x;
+            let ny = hobbit.y + tempDir.y;
+
+            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && mapLayout[ny][nx] !== '1') {
+                slideDir = tempDir;
+                sliding = true;
+                slideDistanceRemaining = maxSlideDistance;
+                slideFrameCounter = 0; 
+            }
+        });
+
+        function updateGoldenEggsUI(targetCount = null) {
+            const container = document.getElementById('golden-eggs');
+            container.innerHTML = ''; 
+            const completedLevels = targetCount !== null ? targetCount : (currentLevel - 1);
+            
+            for (let i = 0; i < completedLevels; i++) {
+                const eggDiv = document.createElement('div');
+                eggDiv.style.width = '22px'; // 8 yumurtanın sığması için ebat ayarlandı
+                eggDiv.style.height = '28px';
+                eggDiv.style.filter = 'drop-shadow(0 0 8px gold)';
+                eggDiv.innerHTML = '<svg width="100%" height="100%"><use href="#golden-egg-svg"></use></svg>';
+                container.appendChild(eggDiv);
+            }
+        }
+
+        function startGame() {
+            document.getElementById('dungeon-box').innerText = `Level ${currentLevel}`;
+            updateGoldenEggsUI(7); // Oyun ilk başladığında 7 yumurta
+            document.getElementById('egg-count').innerText = "0 / " + totalEggs;
+            document.getElementById('start-btn').innerText = `Start Level ${currentLevel}`;
+
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            sfx.start();
+            sfx.startBGM(); 
+
+            document.getElementById('overlay-screen').style.display = 'none';
+            document.getElementById('win-egg-icon').style.display = 'none';
+
+            hobbit = { x: 7, y: 7 };
+            dragons = [
+                { x: 1, y: 1, fire: { active: false, timer: 0, nextFireIn: 100 } },
+                { x: 13, y: 13, fire: { active: false, timer: 0, nextFireIn: 150 } }
+            ];
+            eggsCollected = 0;
+            sliding = false;
+            
+            spawnEggs();
+            
+            isPlaying = true;
+            clearInterval(dragonInterval);
+            dragonInterval = setInterval(moveDragons, dragonSpeed);
+
+            // 10 saniyede bir çıkan 2 hayalet
+            clearInterval(ghostInterval);
+            ghosts.forEach(g => g.active = false);
+            ghostInterval = setInterval(() => {
+                if (isPlaying) {
+                    ghosts.forEach(ghost => {
+                        if (!ghost.active) {
+                            ghost.active = true;
+                            let corners = [
+                                {x: -50, y: -50},
+                                {x: canvas.width + 50, y: -50},
+                                {x: -50, y: canvas.height + 50},
+                                {x: canvas.width + 50, y: canvas.height + 50}
+                            ];
+                            let spawn = corners[Math.floor(Math.random() * corners.length)];
+                            ghost.px = spawn.x + (Math.random() * 20 - 10);
+                            ghost.py = spawn.y + (Math.random() * 20 - 10);
+                            
+                            // 6 Saniye sahnede kalıp kaybolurlar
+                            setTimeout(() => { ghost.active = false; }, 6000);
+                        }
+                    });
+                }
+            }, 10000);
+        }
+
+        function endGame(won, customMessage = null) {
+            isPlaying = false;
+            sliding = false;
+            dragons.forEach(d => d.fire.active = false);
+            ghosts.forEach(g => g.active = false);
+            clearInterval(dragonInterval);
+            clearInterval(ghostInterval);
+            sfx.stopBGM();
+            
+            if (won) sfx.win();
+            else sfx.caught();
+
+            const overlay = document.getElementById('overlay-screen');
+            const title = document.getElementById('title-text');
+            const desc1 = document.getElementById('desc-text1');
+            const desc2 = document.getElementById('desc-text2');
+            const desc3 = document.getElementById('desc-text3');
+            const winEggIcon = document.getElementById('win-egg-icon');
+            const btn = document.getElementById('start-btn');
+
+            overlay.style.display = 'flex';
+            if (won) {
+                title.innerText = 'LEVEL 8 COMPLETED!';
+                title.style.color = '#f1c40f';
+                desc1.innerText = 'You survived the Acid Pools!';
+                desc2.innerText = 'You won the eighth Golden Dragon Egg!';
+                desc3.innerText = 'Movement: Arrow Keys or W, A, S, D';
+                winEggIcon.style.display = 'block'; 
+                
+                updateGoldenEggsUI(8); // Kazanıldığında 8 altın yumurta gösterir
+                
+                btn.innerText = 'Start Level 9';
+            } else {
+                title.innerText = customMessage || 'CAUGHT!';
+                title.style.color = '#c0392b';
+                desc1.innerText = 'You were doomed by the dungeon...';
+                desc2.innerText = `Eggs Collected: ${eggsCollected} / ${totalEggs}`;
+                desc3.innerText = 'Movement: Arrow Keys or W, A, S, D';
+                winEggIcon.style.display = 'none';
+                
+                updateGoldenEggsUI(7); // Kaybedince geri 7'ye düşer
+
+                btn.innerText = 'Try Level 8 Again';
+            }
+        }
+
+        function spawnEggs() {
+            eggs = [];
+            let validSpots = [];
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    if (mapLayout[y][x] === '0' && !(x === 7 && y === 7) && !(x === 1 && y === 1) && !(x === 13 && y === 13)) {
+                        validSpots.push({x, y});
+                    }
+                }
+            }
+
+            validSpots.sort(() => Math.random() - 0.5);
+            for (let i = 0; i < totalEggs; i++) {
+                eggs.push({
+                    x: validSpots[i].x,
+                    y: validSpots[i].y,
+                    color: eggColors[i]
+                });
+            }
+        }
+
+        function checkInteractions() {
+            // Suya (W) girme kontrolü
+            if (mapLayout[hobbit.y][hobbit.x] === 'W') {
+                endGame(false, 'BURNED IN ACID WATER!');
+                return;
+            }
+
+            for (let i = 0; i < eggs.length; i++) {
+                if (hobbit.x === eggs[i].x && hobbit.y === eggs[i].y) {
+                    sfx.collect(); 
+                    eggs.splice(i, 1); 
+                    eggsCollected++;
+                    document.getElementById('egg-count').innerText = `${eggsCollected} / ${totalEggs}`;
+                    
+                    if (eggsCollected === totalEggs) {
+                        endGame(true); 
+                        return;
+                    }
+                    break;
+                }
+            }
+
+            // --- PORTAL MANTIĞI ---
+            if (mapLayout[hobbit.y][hobbit.x] === 'P') {
+                const px = hobbit.x;
+                const py = hobbit.y;
+                
+                // Dış Kenar Portalları Eşleşmeleri
+                if (px === 7 && py === 0) { hobbit.x = 7; hobbit.y = 14; }
+                else if (px === 7 && py === 14) { hobbit.x = 7; hobbit.y = 0; }
+                else if (px === 0 && py === 7) { hobbit.x = 14; hobbit.y = 7; }
+                else if (px === 14 && py === 7) { hobbit.x = 0; hobbit.y = 7; }
+                // İçerideki Bulmaca Portalları Eşleşmeleri
+                else if (px === 3 && py === 3) { hobbit.x = 11; hobbit.y = 11; } 
+                else if (px === 11 && py === 11) { hobbit.x = 3; hobbit.y = 3; } 
+                else if (px === 11 && py === 3) { hobbit.x = 3; hobbit.y = 11; } 
+                else if (px === 3 && py === 11) { hobbit.x = 11; hobbit.y = 3; }
+
+                sliding = false; 
+            }
+
+            for (let dragon of dragons) {
+                if (hobbit.x === dragon.x && hobbit.y === dragon.y) {
+                    endGame(false);
+                    return;
+                }
+            }
+        }
+
+        function moveDragons() {
+            if (!isPlaying) return;
+
+            dragons.forEach(dragon => {
+                if (dragon.x === hobbit.x && dragon.y === hobbit.y) {
+                    endGame(false);
+                    return;
+                }
+
+                let queue = [[{ x: dragon.x, y: dragon.y }]];
+                let visited = new Set();
+                visited.add(`${dragon.x},${dragon.y}`);
+                
+                let dirs = [{x:0,y:-1}, {x:0,y:1}, {x:-1,y:0}, {x:1,y:0}]; 
+                let nextMove = null;
+
+                while (queue.length > 0) {
+                    let path = queue.shift();
+                    let curr = path[path.length - 1];
+
+                    if (curr.x === hobbit.x && curr.y === hobbit.y) {
+                        nextMove = path[1]; 
+                        break;
+                    }
+
+                    for (let d of dirs) {
+                        let nx = curr.x + d.x;
+                        let ny = curr.y + d.y;
+
+                        // Ejderhalar duvar (1), portal (P) ve su (W) üzerinden geçemez
+                        if (nx >= 0 && ny >= 0 && nx < cols && ny < rows && mapLayout[ny][nx] !== '1' && mapLayout[ny][nx] !== 'P' && mapLayout[ny][nx] !== 'W' && !visited.has(`${nx},${ny}`)) {
+                            visited.add(`${nx},${ny}`);
+                            queue.push([...path, { x: nx, y: ny }]);
+                        }
+                    }
+                }
+
+                if (nextMove) {
+                    dragon.x = nextMove.x;
+                    dragon.y = nextMove.y;
+                }
+
+                if (dragon.x === hobbit.x && dragon.y === hobbit.y) {
+                    endGame(false);
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Zemin ve Duvarlar
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    let px = x * tileSize;
+                    let py = y * tileSize;
+
+                    if (mapLayout[y][x] === '1') {
+                        ctx.fillStyle = colors.wallBase; 
+                        ctx.fillRect(px, py, tileSize, tileSize);
+                        
+                        ctx.strokeStyle = '#2c3e50'; 
+                        ctx.lineWidth = 2;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(px, py + tileSize / 3);
+                        ctx.lineTo(px + tileSize, py + tileSize / 3);
+                        ctx.moveTo(px, py + (tileSize * 2) / 3);
+                        ctx.lineTo(px + tileSize, py + (tileSize * 2) / 3);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(px + tileSize / 3, py);
+                        ctx.lineTo(px + tileSize / 3, py + tileSize / 3);
+                        
+                        ctx.moveTo(px + (tileSize * 2) / 3, py + tileSize / 3);
+                        ctx.lineTo(px + (tileSize * 2) / 3, py + (tileSize * 2) / 3);
+                        
+                        ctx.moveTo(px + tileSize / 2, py + (tileSize * 2) / 3);
+                        ctx.lineTo(px + tileSize / 2, py + tileSize);
+                        ctx.stroke();
+
+                    } else if (mapLayout[y][x] === 'P') {
+                        ctx.fillStyle = '#2980b9'; 
+                        ctx.fillRect(px, py, tileSize, tileSize);
+                        
+                        ctx.fillStyle = '#8e44ad';
+                        ctx.beginPath();
+                        ctx.arc(px + tileSize / 2, py + tileSize / 2, tileSize / 2.2, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = '#9b59b6';
+                        ctx.beginPath();
+                        ctx.arc(px + tileSize / 2, py + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.beginPath();
+                        ctx.arc(px + tileSize / 2, py + tileSize / 2, tileSize / 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.strokeStyle = '#7f8c8d';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(px + tileSize / 2, py + tileSize / 2, tileSize / 2.2, Math.PI, 0);
+                        ctx.stroke();
+
+                    } else if (mapLayout[y][x] === 'W') {
+                        // Su Göletleri (Water)
+                        ctx.fillStyle = '#0984e3'; 
+                        ctx.fillRect(px, py, tileSize, tileSize);
+                        
+                        ctx.strokeStyle = '#74b9ff';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        let r = Math.sin(animationTime * 3 + x + y) * 4;
+                        ctx.moveTo(px + 8, py + 15 + r);
+                        ctx.lineTo(px + 22, py + 15 + r);
+                        ctx.moveTo(px + 16, py + 25 - r);
+                        ctx.lineTo(px + 32, py + 25 - r);
+                        ctx.stroke();
+                        
+                    } else {
+                        ctx.fillStyle = colors.floor;
+                        ctx.fillRect(px, py, tileSize, tileSize);
+                        
+                        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                        ctx.beginPath();
+                        ctx.moveTo(px + 5, py + 5);
+                        ctx.lineTo(px + 20, py + 5);
+                        ctx.lineTo(px + 15, py + 10);
+                        ctx.lineTo(px + 5, py + 10);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // 2. Yumurtalar
+            eggs.forEach((egg, index) => {
+                let cx = egg.x * tileSize + tileSize / 2;
+                let floatOffset = Math.sin(animationTime + index) * 6; 
+                let cy = (egg.y * tileSize + tileSize / 2) + floatOffset;
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.beginPath();
+                let shadowSize = 10 - (floatOffset / 2);
+                ctx.ellipse(cx, egg.y * tileSize + tileSize - 8, shadowSize, shadowSize / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                let gradient = ctx.createRadialGradient(cx - 5, cy - 5, 2, cx, cy, tileSize / 2);
+                gradient.addColorStop(0, '#ffffff'); 
+                gradient.addColorStop(0.3, egg.color); 
+                gradient.addColorStop(1, '#111'); 
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, tileSize/3, tileSize/2.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(cx, cy - 6, 4, 0, Math.PI); 
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(cx - 6, cy + 2, 4, 0, Math.PI); 
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(cx + 6, cy + 2, 4, 0, Math.PI); 
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy + 10, 4, 0, Math.PI); 
+                ctx.stroke();
+            });
+
+            // 3. Oyuncu
+            let hx = hobbit.x * tileSize + tileSize / 2;
+            let hy = hobbit.y * tileSize + tileSize / 2;
+
+            ctx.fillStyle = '#1e8449'; 
+            ctx.beginPath();
+            ctx.moveTo(hx, hy - 12);
+            ctx.lineTo(hx - 16, hy + 14); 
+            ctx.lineTo(hx - 5, hy + 16);
+            ctx.lineTo(hx + 5, hy + 15);
+            ctx.lineTo(hx + 14, hy + 13);
+            ctx.fill();
+
+            ctx.fillStyle = '#bdc3c7'; 
+            ctx.beginPath();
+            ctx.moveTo(hx - 7, hy - 4);
+            ctx.lineTo(hx + 7, hy - 4);
+            ctx.lineTo(hx + 9, hy + 10);
+            ctx.lineTo(hx - 9, hy + 10);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(hx - 5, hy); ctx.lineTo(hx + 5, hy);
+            ctx.moveTo(hx - 6, hy + 4); ctx.lineTo(hx + 6, hy + 4);
+            ctx.moveTo(hx - 7, hy + 8); ctx.lineTo(hx + 7, hy + 8);
+            ctx.stroke();
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.strokeStyle = '#f1c40f';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(hx - 4, hy - 4, 2.5, 4, Math.PI/4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#e6ba95';
+            ctx.beginPath();
+            ctx.ellipse(hx - 7, hy + 14, 5, 3, 0, 0, Math.PI * 2);
+            ctx.ellipse(hx + 7, hy + 14, 5, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#4e342e'; 
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(hx - 8, hy + 13); ctx.lineTo(hx - 6, hy + 13);
+            ctx.moveTo(hx + 6, hy + 13); ctx.lineTo(hx + 8, hy + 13);
+            ctx.stroke();
+
+            let headGrad = ctx.createRadialGradient(hx - 2, hy - 13, 1, hx, hy - 11, 8);
+            headGrad.addColorStop(0, '#f5deb3');
+            headGrad.addColorStop(1, '#d2a679');
+            ctx.fillStyle = headGrad;
+            ctx.beginPath();
+            ctx.arc(hx, hy - 11, 7, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#2c3e50';
+            ctx.beginPath();
+            ctx.arc(hx - 3, hy - 12, 1.5, 0, Math.PI*2);
+            ctx.arc(hx + 3, hy - 12, 1.5, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.fillStyle = '#d35400'; 
+            ctx.beginPath();
+            ctx.arc(hx, hy - 14, 8, Math.PI, 0); 
+            ctx.arc(hx - 7, hy - 10, 4, 0, Math.PI * 2); 
+            ctx.arc(hx + 7, hy - 10, 4, 0, Math.PI * 2); 
+            ctx.arc(hx - 4, hy - 17, 3, 0, Math.PI * 2); 
+            ctx.fill();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(hx - 12, hy + 2, 7, 0, Math.PI * 2);
+            ctx.clip(); 
+
+            ctx.fillStyle = '#2980b9';
+            ctx.fillRect(hx - 20, hy - 6, 16, 16);
+
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2.5;
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(hx - 19, hy - 2);
+            ctx.lineTo(hx - 16, hy + 2);
+            ctx.lineTo(hx - 13, hy - 2);
+            ctx.lineTo(hx - 10, hy + 2);
+            ctx.lineTo(hx - 7, hy - 2);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(hx - 19, hy + 4);
+            ctx.lineTo(hx - 16, hy + 8);
+            ctx.lineTo(hx - 13, hy + 4);
+            ctx.lineTo(hx - 10, hy + 8);
+            ctx.lineTo(hx - 7, hy + 4);
+            ctx.stroke();
+
+            ctx.restore(); 
+
+            ctx.strokeStyle = '#7f8c8d';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(hx - 12, hy + 2, 7, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#bdc3c7';
+            ctx.beginPath();
+            ctx.arc(hx - 12, hy + 2, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff'; 
+            ctx.strokeStyle = '#e0f7fa'; 
+            ctx.lineWidth = 3.5;
+            ctx.lineCap = "round";
+            
+            ctx.beginPath();
+            ctx.moveTo(hx + 10, hy); 
+            ctx.lineTo(hx + 22, hy - 12); 
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(hx + 11, hy - 1); 
+            ctx.lineTo(hx + 21, hy - 11);
+            ctx.stroke();
+            ctx.shadowBlur = 0; 
+            
+            ctx.strokeStyle = '#f39c12'; 
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(hx + 7, hy - 3);
+            ctx.lineTo(hx + 13, hy + 3);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#8d6e63';
+            ctx.beginPath();
+            ctx.moveTo(hx + 10, hy);
+            ctx.lineTo(hx + 6, hy + 4);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(hx + 5, hy + 5, 2.5, 0, Math.PI*2);
+            ctx.fill();
+
+            // 4. İki Ejderha ve Kırmızı Alev
+            dragons.forEach(dragon => {
+                let dx = dragon.x * tileSize + tileSize / 2;
+                let dy = dragon.y * tileSize + tileSize / 2;
+
+                ctx.fillStyle = colors.dragon;
+                ctx.beginPath();
+                ctx.moveTo(dx, dy - 15);
+                ctx.lineTo(dx + 15, dy + 10);
+                ctx.lineTo(dx - 15, dy + 10);
+                ctx.fill();
+
+                ctx.fillStyle = '#8e44ad';
+                ctx.beginPath();
+                ctx.moveTo(dx - 10, dy - 5);
+                ctx.lineTo(dx - 15, dy - 18);
+                ctx.lineTo(dx - 5, dy - 10);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(dx + 10, dy - 5);
+                ctx.lineTo(dx + 15, dy - 18);
+                ctx.lineTo(dx + 5, dy - 10);
+                ctx.fill();
+
+                ctx.fillStyle = '#f1c40f';
+                ctx.beginPath();
+                ctx.arc(dx - 5, dy + 2, 3, 0, Math.PI*2);
+                ctx.arc(dx + 5, dy + 2, 3, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.fillRect(dx - 6, dy, 2, 4);
+                ctx.fillRect(dx + 4, dy, 2, 4);
+
+                // 5. Kırmızı Ejderha Ateşi
+                if (dragon.fire.active) {
+                    ctx.save();
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff0000'; // Güçlü Kırmızı parlama
+                    
+                    let fLength = 25 + Math.random() * 20; 
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(dx, dy + 10); 
+                    
+                    ctx.lineTo(dx - 8 - Math.random() * 6, dy + 15 + Math.random() * 10);
+                    ctx.lineTo(dx - 3 + Math.random() * 6, dy + 20 + Math.random() * 10);
+                    
+                    ctx.lineTo(dx, dy + 10 + fLength);
+                    
+                    ctx.lineTo(dx + 3 - Math.random() * 6, dy + 20 + Math.random() * 10);
+                    ctx.lineTo(dx + 8 + Math.random() * 6, dy + 15 + Math.random() * 10);
+                    
+                    ctx.closePath();
+                    
+                    let fireGradient = ctx.createLinearGradient(dx, dy + 10, dx, dy + 10 + fLength);
+                    fireGradient.addColorStop(0, 'rgba(255, 100, 0, 0.9)');    
+                    fireGradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.9)');  
+                    fireGradient.addColorStop(1, 'rgba(139, 0, 0, 0)');        
+                    
+                    ctx.fillStyle = fireGradient;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+
+            // 6. Hayalet Pelerinler (2 Adet)
+            ghosts.forEach(ghost => {
+                if (ghost.active) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.8 + Math.sin(animationTime * 5) * 0.2;
+                    ctx.fillStyle = '#512e5f';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#9b59b6';
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(ghost.px, ghost.py - 15);
+                    ctx.lineTo(ghost.px - 15, ghost.py + 15);
+                    ctx.quadraticCurveTo(ghost.px, ghost.py + 10, ghost.px + 15, ghost.py + 15);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(ghost.px, ghost.py - 12, 8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#f1c40f'; 
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#f1c40f';
+                    ctx.beginPath();
+                    ctx.arc(ghost.px - 3, ghost.py - 12, 2, 0, Math.PI * 2);
+                    ctx.arc(ghost.px + 3, ghost.py - 12, 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            });
+        }
+
+        function gameLoop() {
+            animationTime += 0.08; 
+
+            if (isPlaying) {
+                
+                if (sliding) {
+                    slideFrameCounter--;
+                    if (slideFrameCounter <= 0) {
+                        let nx = hobbit.x + slideDir.x;
+                        let ny = hobbit.y + slideDir.y;
+
+                        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && mapLayout[ny][nx] !== '1' && slideDistanceRemaining > 0) {
+                            hobbit.x = nx;
+                            hobbit.y = ny;
+                            checkInteractions();
+                            slideDistanceRemaining--; 
+                            slideFrameCounter = slideSpeed; 
+                            
+                            if (slideDistanceRemaining <= 0) {
+                                sliding = false;
+                            }
+                        } else {
+                            sliding = false; 
+                        }
+                    }
+                }
+
+                dragons.forEach(dragon => {
+                    dragon.fire.nextFireIn--;
+                    if (dragon.fire.nextFireIn <= 0) {
+                        dragon.fire.active = true;
+                        dragon.fire.timer = 45 + Math.floor(Math.random() * 30); 
+                        dragon.fire.nextFireIn = Math.floor(Math.random() * 180) + 120; 
+                    }
+
+                    if (dragon.fire.active) {
+                        dragon.fire.timer--;
+                        if (dragon.fire.timer <= 0) {
+                            dragon.fire.active = false;
+                        }
+                    }
+                });
+
+                ghosts.forEach(ghost => {
+                    if (ghost.active) {
+                        let gx = hobbit.x * tileSize + tileSize/2;
+                        let gy = hobbit.y * tileSize + tileSize/2;
+                        let dist = Math.hypot(gx - ghost.px, gy - ghost.py);
+                        
+                        if (dist > 0) {
+                            ghost.px += ((gx - ghost.px) / dist) * 1.8; 
+                            ghost.py += ((gy - ghost.py) / dist) * 1.8;
+                        }
+                        
+                        if (dist < tileSize/2) {
+                            endGame(false, "CAUGHT BY A GHOST!"); 
+                        }
+                    }
+                });
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.getElementById('dungeon-box').innerText = `Level ${currentLevel}`;
+        updateGoldenEggsUI(7); 
+        document.getElementById('egg-count').innerText = "0 / " + totalEggs;
+        document.getElementById('start-btn').innerText = `Start Level ${currentLevel}`;
+
+        requestAnimationFrame(gameLoop);
+
+    </script>
+</body>
+</html>
