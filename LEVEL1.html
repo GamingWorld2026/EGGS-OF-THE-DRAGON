@@ -444,10 +444,22 @@
                     desc1.innerText = 'You have collected all 10 Golden Eggs!';
                     desc2.innerText = 'The Kingdom is safe!';
                     btn.innerText = 'Play Again (Reset)';
+
+                 // Oyunu bitirince tekrar Level 1'e veya ana menüye dön
+                    btn.onclick = function() {
+                        window.location.href = "LEVEL1.html";
+                    };
+
+
                     // Oyunu sıfırla
                     resetProgression();
                 } else {
                     btn.innerText = 'Start Level ' + currentLevel;
+
+                // Butona basıldığında bir sonraki level dosyasına git
+                    btn.onclick = function() {
+                        window.location.href = "LEVEL" + currentLevel + ".html";
+                    };
                 }
                 
                 // Üst paneli güncelle (yeni yumurtayı ekle)

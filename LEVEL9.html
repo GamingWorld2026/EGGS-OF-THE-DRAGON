@@ -555,8 +555,24 @@
                 winEggIcon.style.display = 'block'; 
                 
                 updateGoldenEggsUI(9);
+
                 
-                btn.innerText = 'Start Level 10';
+                currentLevel++; // Level 10'a geçişi tetikler
+
+                btn.innerText = 'Start Level ' + currentLevel;
+                
+                // Butona basıldığında bir sonraki level dosyasına gitmesini sağlar
+                btn.onclick = function() {
+                    if (currentLevel <= 10) {
+                        window.location.href = "LEVEL" + currentLevel + ".html";
+                    } else {
+                        window.location.href = "LEVEL1.html"; // 10 bittiyse başa dön
+                    }
+                };
+
+
+            updateGoldenEggsUI(8);
+
             } else {
                 title.innerText = customMessage || 'CAUGHT!';
                 title.style.color = '#c0392b';
@@ -565,7 +581,7 @@
                 desc3.innerText = 'Movement: Arrow Keys or W, A, S, D';
                 winEggIcon.style.display = 'none';
                 
-                updateGoldenEggsUI(8);
+                
 
                 btn.innerText = 'Try Level 9 Again';
             }

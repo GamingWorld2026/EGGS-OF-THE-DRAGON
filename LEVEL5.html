@@ -510,8 +510,23 @@
                 winEggIcon.style.display = 'block'; 
                 
                 updateGoldenEggsUI(5); // Kazanıldığında 5 altın yumurta
+
+
+                currentLevel++; // Level 6'e geçişi tetikler
+
+                btn.innerText = 'Start Level ' + currentLevel;
                 
-                btn.innerText = 'Start Level 6';
+                // Butona basıldığında bir sonraki level dosyasına gitmesini sağlar
+                btn.onclick = function() {
+                    if (currentLevel <= 10) {
+                        window.location.href = "LEVEL" + currentLevel + ".html";
+                    } else {
+                        window.location.href = "LEVEL1.html"; // 10 bittiyse başa dön
+                    }
+                };
+
+                updateGoldenEggsUI(4); 
+                
             } else {
                 title.innerText = 'CAUGHT!';
                 title.style.color = '#c0392b';
@@ -520,7 +535,7 @@
                 desc3.innerText = 'Movement: Arrow Keys or W, A, S, D';
                 winEggIcon.style.display = 'none';
                 
-                updateGoldenEggsUI(4); 
+                
 
                 btn.innerText = 'Try Level 5 Again';
             }

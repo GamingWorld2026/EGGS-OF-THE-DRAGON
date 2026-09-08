@@ -421,7 +421,17 @@
                 
                 currentLevel++; // Level 3'e geçişi tetikler
                 btn.innerText = 'Start Level ' + currentLevel;
+
+// Butona basıldığında bir sonraki level dosyasına gitmesini sağlar
+                btn.onclick = function() {
+                    if (currentLevel <= 10) {
+                        window.location.href = "LEVEL" + currentLevel + ".html";
+                    } else {
+                        window.location.href = "LEVEL1.html"; // 10 bittiyse başa dön
+                    }
+                };
                 
+
                 // Oyuncu kazandığında bu fonksiyon üst panelde 2 altın yumurtayı gösterecek
                 updateGoldenEggsUI();
             } else {

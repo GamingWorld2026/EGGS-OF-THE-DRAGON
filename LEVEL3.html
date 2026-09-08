@@ -477,8 +477,21 @@
                 // İlerlemeyi gösterişli altın yumurta ile UI'da göster (Kazanınca 3 tane)
                 updateGoldenEggsUI(3);
                 
-                btn.innerText = 'Start Level 4';
-                // currentLevel++; // Bu bölüm sadece Level 3'ü yaptığı için ilerlemiyoruz
+                currentLevel++; // Level 4'e geçişi tetikler
+
+                btn.innerText = 'Start Level ' + currentLevel;
+                
+                // Butona basıldığında bir sonraki level dosyasına gitmesini sağlar
+                btn.onclick = function() {
+                    if (currentLevel <= 10) {
+                        window.location.href = "LEVEL" + currentLevel + ".html";
+                    } else {
+                        window.location.href = "LEVEL1.html"; // 10 bittiyse başa dön
+                    }
+                };
+
+                // UI'ı başlangıçtaki 2 yumurta durumuna geri döndür (eğer win ekranında 3 olmuşsa)
+                updateGoldenEggsUI(2);
 
             } else {
                 title.innerText = 'CAUGHT!';
@@ -488,8 +501,7 @@
                 desc3.innerText = 'Movement: Arrow Keys or W, A, S, D';
                 winEggIcon.style.display = 'none';
                 
-                // UI'ı başlangıçtaki 2 yumurta durumuna geri döndür (eğer win ekranında 3 olmuşsa)
-                updateGoldenEggsUI(2);
+                
 
                 btn.innerText = 'Try Level 3 Again';
             }
