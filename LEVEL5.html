@@ -503,6 +503,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+window.parent.postMessage({ type: 'level_completed', levelNumber: 5 }, '*');
+
                 title.innerText = 'LEVEL 5 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You navigated the Lost Corridors!';

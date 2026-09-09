@@ -473,6 +473,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+                window.parent.postMessage({ type: 'level_completed', levelNumber: 4 }, '*');
+
                 title.innerText = 'LEVEL 4 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You survived the Glacier Dungeon!';

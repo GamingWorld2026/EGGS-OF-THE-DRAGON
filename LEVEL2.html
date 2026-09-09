@@ -413,6 +413,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 2 }, '*');
+
                 title.innerText = 'LEVEL ' + currentLevel + ' COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You braved the fog and collected the eggs.';

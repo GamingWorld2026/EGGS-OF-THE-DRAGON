@@ -487,6 +487,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 6 }, '*');
+
                 title.innerText = 'LEVEL 6 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You bypassed the Twin Dragons and the Ghost!';

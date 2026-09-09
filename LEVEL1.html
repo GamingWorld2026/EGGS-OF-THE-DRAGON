@@ -430,6 +430,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 1 }, '*');
+
                 title.innerText = 'LEVEL ' + currentLevel + ' COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You successfully secured the scaly eggs.';

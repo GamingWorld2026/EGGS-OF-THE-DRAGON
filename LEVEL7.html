@@ -497,6 +497,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 7 }, '*');
+
                 title.innerText = 'LEVEL 7 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You mastered the Portal Networks!';

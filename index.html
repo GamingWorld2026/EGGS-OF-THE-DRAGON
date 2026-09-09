@@ -76,6 +76,22 @@
             color: #fff;
         }
 
+        /* Kilitli Level Butonu Stilleri */
+        button.level-btn.locked {
+            background: linear-gradient(180deg, #2c3e50, #1a252f);
+            color: #7f8c8d;
+            border-color: #34495e;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        button.level-btn.locked:hover {
+            transform: none;
+            border-color: #34495e;
+            color: #7f8c8d;
+        }
+
         #game-frame-container {
             display: none;
             flex-direction: column;
@@ -118,6 +134,22 @@
             border: none;
             background-color: #0b0c10;
         }
+        
+        #reset-btn {
+            margin-top: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            border: 1px solid #7f8c8d;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        #reset-btn:hover {
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -130,6 +162,8 @@
         <div class="level-grid" id="level-grid">
             <!-- Butonlar JavaScript ile yüklenecek -->
         </div>
+        
+        <button id="reset-btn" onclick="resetProgress()">Restart Progress</button>
     </div>
 
     <!-- OYUN ÇERÇEVESİ (IFRAME) -->
@@ -141,8 +175,6 @@
     </div>
 
     <script>
-        // Dosya isimlerinizi buraya birebir yazmalısınız. 
-        // Not: İlk iki dosyanızda "LEVEL1 .html" şeklinde boşluk bulunduğundan diziyi ona göre yapılandırdım.
         const levels = [
             "LEVEL1.html",
             "LEVEL2.html",
@@ -161,33 +193,77 @@
         const frameContainer = document.getElementById('game-frame-container');
         const gameFrame = document.getElementById('game-frame');
 
-        // Level butonlarını dinamik oluştur
-        levels.forEach((file, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'level-btn';
-            btn.innerText = `Level ${index + 1}`;
-            btn.onclick = () => loadLevel(file);
-            grid.appendChild(btn);
-        });
+        // Kullanıcının ulaştığı en yüksek leveli al. (Yoksa 1. level açıktır)
+        let unlockedLevel = parseInt(localStorage.getItem('dragonEggsUnlockedLevel')) || 1;
 
-        function loadLevel(fileName) {
-            // İlgili dosyayı iframe içine yükle ve menüyü gizle
+        // Level butonlarını dinamik oluştur
+        function renderLevels() {
+            grid.innerHTML = ''; // Önceki butonları temizle
+            
+            levels.forEach((file, index) => {
+                const levelNum = index + 1;
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                
+                if (levelNum <= unlockedLevel) {
+                    // Kilit AÇIK
+                    btn.innerText = `Level ${levelNum}`;
+                    btn.onclick = () => loadLevel(file, levelNum);
+                } else {
+                    // Kilit KAPALI
+                    btn.classList.add('locked');
+                    btn.innerText = `Level ${levelNum} 🔒`;
+                    // Tıklanamasın
+                }
+                
+                grid.appendChild(btn);
+            });
+        }
+
+        function loadLevel(fileName, levelNum) {
             gameFrame.src = fileName;
             mainMenu.style.display = 'none';
             frameContainer.style.display = 'flex';
             
-            // Seçilen oyuna tıklandıktan sonra klavye odağını iframe'e ver
             setTimeout(() => {
                 gameFrame.focus();
             }, 100);
         }
 
         function backToMenu() {
-            // Iframe içeriğini temizle ve ana menüye dön
             gameFrame.src = "";
             frameContainer.style.display = 'none';
             mainMenu.style.display = 'flex';
+            renderLevels(); // Menüye dönünce butonları güncelle (yeni açılan varsa yansısın)
         }
+
+        // İlerlemeyi sıfırlamak için küçük bir fonksiyon (Test için çok işine yarar)
+        function resetProgress() {
+            if(confirm("Are you sure you want to reset all your progress?")) {
+                localStorage.setItem('dragonEggsUnlockedLevel', 1);
+                unlockedLevel = 1;
+                renderLevels();
+            }
+        }
+
+        // İLK YÜKLEME
+        renderLevels();
+
+        // ------ ÇOK ÖNEMLİ BÖLÜM: OYUNDAN (IFRAME) GELEN MESAJI DİNLE ------
+        window.addEventListener('message', (event) => {
+            // Eğer iframe içindeki oyun "level_completed" mesajı gönderirse:
+            if (event.data && event.data.type === 'level_completed') {
+                const completedLevelNum = event.data.levelNumber; // Kazandığı level
+                const nextLevelNum = completedLevelNum + 1;
+
+                // Eğer bir sonraki level şu anki kilidi açık levellerden büyükse (yeni level açılıyorsa)
+                if (nextLevelNum > unlockedLevel && nextLevelNum <= levels.length) {
+                    unlockedLevel = nextLevelNum;
+                    localStorage.setItem('dragonEggsUnlockedLevel', unlockedLevel);
+                }
+            }
+        });
+
     </script>
 </body>
 </html>

@@ -468,6 +468,9 @@
 
             overlay.style.display = 'flex';
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 3 }, '*');
+
                 title.innerText = 'LEVEL 3 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You secured all Magma Eggs!';

@@ -547,7 +547,11 @@
             const btn = document.getElementById('start-btn');
 
             overlay.style.display = 'flex';
+
             if (won) {
+
+            window.parent.postMessage({ type: 'level_completed', levelNumber: 9 }, '*');
+
                 title.innerText = 'LEVEL 9 COMPLETED!';
                 title.style.color = '#f1c40f';
                 desc1.innerText = 'You survived the Dark Dungeon!';
